@@ -1,122 +1,64 @@
 import requests
 
-def stealthy_vulnerability_scan(domain):
-    vulnerabilities = {
-        "SQL Injection": [
-            f"{domain}/search.php?id={id}",
-            f"{domain}/login.php?user=1'&",
-            f"{domain}/register.php?username=1'&",
-            f"{domain}/forgot_password.php?id=1'&",
-        ],
-        "Cross-Site Scripting (XSS)": [
-            f"{domain}/search.php?q=<script>alert('XSS')</script>",
-            f"{domain}/login.php?user=<script>alert('XSS')</script>",
-            f"{domain}/register.php?username=<script>alert('XSS')</script>",
-            f"{domain}/forgot_password.php?id=<script>alert('XSS')</script>",
-        ],
-        "Cross-Site Request Forgery (CSRF)": [
-            f"{domain}/search.php",
-            f"{domain}/login.php",
-            f"{domain}/register.php",
-            f"{domain}/forgot_password.php",
-        ],
-        "Remote Code Execution (RCE)": [
-            f"{domain}/upload.php",
-            f"{domain}/execute.php?code=echo('Hello World');",
-        ],
-        "Local File Inclusion (LFI)": [
-            f"{domain}/view.php?file=../../../../etc/passwd",
-            f"{domain}/view.php?file=../../../../etc/hosts",
-        ],
-        "Directory Traversal (DT)": [
-            f"{domain}/upload.php?dir=../etc/",
-            f"{domain}/upload.php?dir=../../../etc/",
-        ],
-        "XML External Entity (XXE)": [
-            f"{domain}/xml.php?entity=http://example.com/",
-            f"{domain}/xml.php?entity=ftp://example.com/",
-        ],
-        "Server Side Request Forgery (SSRF)": [
-            f"{domain}/search.php?host=http://example.com/",
-            f"{domain}/search.php?host=https://example.com/",
-        ],
-        "Forceful Browsing": [
-            f"{domain}/wp-admin/",
-            f"{domain}/admin/",
-        ],
-        "Unrestricted File Upload": [
-            f"{domain}/upload.php",
-        ],
-        "Out-of-Band (OOB) Code Execution": [
-            f"{domain}/upload.php?action=download",
-        ],
+def advanced_vulnerability_scan(domain):
+    # Ensure domain includes schema and remove trailing slashes
+    if not domain.startswith("http://") and not domain.startswith("https://"):
+        domain = "http://" + domain
+    domain = domain.rstrip("/")
+    
+    print(f"\n[*] Starting advanced security assessment on: {domain}")
+    headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
+
+    # 1. Text-based checks (SQLi, XSS, LFI)
+    text_vulns = {
+        "SQL Injection": {
+            "paths": ["/search.php?id=1'", "/login.php?user=1' OR '1'='1"], 
+            "sigs": ["SQL syntax", "mysql_fetch", "Warning: mysql", "PostgreSQL", "ORA-00933"]
+        },
+        "Cross-Site Scripting (XSS)": {
+            "paths": ["/search.php?q=<script>alert(1)</script>"], 
+            "sigs": ["<script>alert(1)</script>"]
+        },
+        "Local File Inclusion (LFI)": {
+            "paths": ["/view.php?file=../../../../etc/passwd"], 
+            "sigs": ["root:x:0:0:", "bin:x:1:1:"]
+        }
     }
 
-    for vulnerability, urls in vulnerabilities.items():
-        for url in urls:
-            try:
-                response = requests.head(url)
-                if vulnerability == "SQL Injection":
-                    if "SQL Injection Vulnerability Detected" in response.text:
-                        print(f"[!] {vulnerability} vulnerability detected at: {url}")
-                    else:
-                        print(f"[-] No {vulnerability} vulnerability detected at: {url}")
-                elif vulnerability == "Cross-Site Scripting (XSS)":
-                    if "Cross-Site Scripting (XSS) Vulnerability Detected" in response.text:
-                        print(f"[!] {vulnerability} vulnerability detected at: {url}")
-                    else:
-                        print(f"[-] No {vulnerability} vulnerability detected at: {url}")
-                elif vulnerability == "Cross-Site Request Forgery (CSRF)":
-                    if "Cross-Site Request Forgery (CSRF) Vulnerability Detected" in response.text:
-                        print(f"[!] {vulnerability} vulnerability detected at: {url}")
-                    else:
-                        print(f"[-] No {vulnerability} vulnerability detected at: {url}")
-                elif vulnerability == "Remote Code Execution (RCE)":
-                    if "Remote Code Execution (RCE) Vulnerability Detected" in response.text:
-                        print(f"[!] {vulnerability} vulnerability detected at: {url}")
-                    else:
-                        print(f"[-] No {vulnerability} vulnerability detected at: {url}")
-                elif vulnerability == "Local File Inclusion (LFI)":
-                    if "Local File Inclusion (LFI) Vulnerability Detected" in response.text:
-                        print(f"[!] {vulnerability} vulnerability detected at: {url}")
-                    else:
-                        print(f"[-] No {vulnerability} vulnerability detected at: {url}")
-                elif vulnerability == "Directory Traversal (DT)":
-                    if "Directory Traversal (DT) Vulnerability Detected" in response.text:
-                        print(f"[!] {vulnerability} vulnerability detected at: {url}")
-                    else:
-                        print(f"[-] No {vulnerability} vulnerability detected at: {url}")
-                elif vulnerability == "XML External Entity (XXE)":
-                    if "XML External Entity (XXE) Vulnerability Detected" in response.text:
-                        print(f"[!] {vulnerability} vulnerability detected at: {url}")
-                    else:
-                        print(f"[-] No {vulnerability} vulnerability detected at: {url}")
-                elif vulnerability == "Server Side Request Forgery (SSRF)":
-                    if "Server Side Request Forgery (SSRF) Vulnerability Detected" in response.text:
-                        print(f"[!] {vulnerability} vulnerability detected at: {url}")
-                    else:
-                        print(f"[-] No {vulnerability} vulnerability detected at: {url}")
-                elif vulnerability == "Forceful Browsing":
-                    if "Forceful Browsing Vulnerability Detected" in response.text:
-                        print(f"[!] {vulnerability} vulnerability detected at: {url}")
-                    else:
-                        print(f"[-] No {vulnerability} vulnerability detected at: {url}")
-                elif vulnerability == "Unrestricted File Upload":
-                    if "Unrestricted File Upload Vulnerability Detected" in response.text:
-                        print(f"[!] {vulnerability} vulnerability detected at: {url}")
-                    else:
-                        print(f"[-] No {vulnerability} vulnerability detected at: {url}")
-                elif vulnerability == "Out-of-Band (OOB) Code Execution":
-                    if "Out-of-Band (OOB) Code Execution Vulnerability Detected" in response.text:
-                        print(f"[!] {vulnerability} vulnerability detected at: {url}")
-                    else:
-                        print(f"[-] No {vulnerability} vulnerability detected at: {url}")
-            except requests.exceptions.RequestException as e:
-                print(f"[-] Failed to connect to: {url}, Error: {str(e)}")
+    # 2. Status Code checks (Forceful Browsing, Directory Traversal, Open Endpoints)
+    status_paths = [
+        "/admin/", 
+        "/wp-admin/", 
+        "/upload.php", 
+        "/execute.php", 
+        "/upload.php?dir=../etc/"
+    ]
 
-def main():
-    domain = input("Enter the domain to scan for vulnerabilities: ")
-    stealthy_vulnerability_scan(domain)
+    # Execute text-signature scans
+    for vuln, data in text_vulns.items():
+        for path in data["paths"]:
+            url = domain + path
+            try:
+                res = requests.get(url, headers=headers, timeout=5)
+                if any(sig.lower() in res.text.lower() for sig in data["sigs"]): 
+                    print(f"[!] POSSIBLE {vuln} detected at: {url}")
+            except Exception:
+                pass
+
+    # Execute status code discovery scans
+    for path in status_paths:
+        url = domain + path
+        try:
+            res = requests.get(url, headers=headers, timeout=5)
+            # If a restricted portal or active script returns 200 OK, it's exposed
+            if res.status_code == 200:
+                print(f"[!] Exposure/Access Granted (HTTP 200) at: {url}")
+        except Exception:
+            pass
+
+    print("\n[*] Scan completed.")
 
 if __name__ == "__main__":
-    main()
+    target_domain = input("Enter the domain to scan for vulnerabilities: ").strip()
+    if target_domain:
+        advanced_vulnerability_scan(target_domain)
